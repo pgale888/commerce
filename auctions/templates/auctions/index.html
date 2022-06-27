@@ -1,0 +1,27 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>Active Listings</h2>
+    {% if active_listings %}
+    {%  for listing in active_listings %}
+    <div>
+        <h4>{{ listing.category.capitalize }}: {{ listing.title }}</h4>
+        <table>
+            <tr>
+                <td><img src="{{  MEDIA_URL }}{{ listing.image }}" alt="{{ listing.title }} image" style="max-height:50px"></td>
+                <td style="vertical-align: top">{{ listing.description }}</td>
+            </tr>
+        </table>
+        <h5>{%  if listing.get_max_bid %}
+            ${{ listing.get_max_bid }}
+            {% else %}
+            ${{ listing.starting_bid }}
+            {% endif %}
+            <a href="{%  url 'bid' listing.id %}">Make a Bid</a>
+        </h5>
+    </div>
+    {% endfor %}
+    {% else %}
+    <p>There are no active listings.  Try again later.</p>
+    {% endif %}
+{% endblock %}

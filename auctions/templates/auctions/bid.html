@@ -1,0 +1,62 @@
+{% extends "auctions/layout.html" %}
+
+{% block body %}
+    <h2>{{ listing.title }}</h2>
+    <h6>Category: {{ listing.category }}</h6>
+    <div>
+        <table>
+            <tr>
+                <td><img src="{{  MEDIA_URL }}{{ listing.image }}" alt="{{ listing.title }} image" style="max-height:300px"></td>
+                <td style="vertical-align: top">{{ listing.description }}</td>
+            </tr>
+        </table>
+        <!-- If there are no bids then use the starting_bid from the listing-->
+        {%  if bids %}
+            <p>Current Bid: ${{ listing.get_max_bid }}</p>
+        {% else %}
+            <h5 style="display: inline">Starting Bid: ${{ listing.starting_bid }}</h5> (reserve)
+        {% endif %}
+    </div>
+    <div>
+    {% if user.is_authenticated %}
+        <!-- For all logged-in users that are not the listing owner-->
+        {% if user.id is not listing.user_id %}
+            {% if not listing.active %}
+                Auction is over and bidding is closed.
+                {% if is_winner%}
+                    Congratulations, you are the <h6 style="display: inline">winner</h6> of the auction.
+                {% endif %}
+            {% else %}
+                <h4>Make a bid</h4>
+                <form action="{% url 'bid'  listing.id %}" method="post" style="display: inline">
+                {% csrf_token %}
+                {{ form.as_p }}
+                    <button type="submit">Submit</button>
+                </form>
+                <p><a href="{% url 'watch' listing.id %}">{{ watch_list_state }} watchlist</a></p>
+            {% endif %}
+            <p><a href="{% url 'comment'  listing.id %}">Add a comment</a></p>
+        <!-- For the user who is logged in and owns the listing -->
+        {% else %}
+            <form action="{% url 'bid'  listing.id %}" method="post" style="display: inline">
+             Change Auction Status
+            {% csrf_token %}
+            {{ form.as_p }}
+                <button type="submit">Submit</button>
+            </form>
+        {% endif %}
+        <h2>Comments</h2>
+        {%  for comment in comments %}
+            <ul>
+                <li>{{ comment.comment }}</li>
+            </ul>
+        {%  empty %}
+            <p>Be the first to make a comment.</p>
+        {%  endfor %}
+
+    {% else %}
+        <!-- For users who need to register or login -->
+        <p>To make a bid please <a href="{% url 'register' %}">Register</a></p>
+    {% endif %}
+    </div>
+{% endblock %}
